@@ -236,7 +236,23 @@ public class RedBlackTreeOfInteger {
      * @param n nodo
      */
     public void rotacaoEsquerda(Node n){
-       
+       Node aux = n.right;
+        n.right = aux.left;
+        if(aux.left != null){
+            aux.left.father = n;
+        }
+        aux.father = n.father;
+        if(n.father == nil){
+            root = aux;
+        }
+        else if(n == n.father.left){
+            n.father.right = aux;
+        }
+        else{
+            n.father.right = aux;
+        }
+        aux.left = n;
+        n.father = aux;
     }
 
     /**
@@ -244,7 +260,23 @@ public class RedBlackTreeOfInteger {
      * @param n
      */
     public void rotacaoDireita(Node n){
-        
+        Node aux = n.left;
+        n.left = aux.right;
+        if(aux.right != nil){
+            aux.right.father = n;
+        }
+        aux.father = n.father;
+        if(n.father == null){
+            root = aux;
+        }
+        else if(n == n.father.right){
+            n.father.right = aux;
+        }
+        else {
+            n.father.left = aux;
+        }
+        aux.right = n;
+        n.father = aux;
     }
 
     /**
@@ -345,12 +377,80 @@ public class RedBlackTreeOfInteger {
         }
     }
 
-    /**
-     * adiciona elemento na arvore
-     * @param element elemento a ser adicionado
-     * O(log n)
-     */
-    public void add(Integer element){
-
+    public void add(Integer element) {
+        add(root, element);
     }
+
+    private Node add(Node root, Integer element){
+       return null;
+    }
+    
+    public RedBlackTreeOfInteger clone(){
+        RedBlackTreeOfInteger t = new RedBlackTreeOfInteger();
+        clone(root, t); 
+        return t;
+    }
+    private Node clone(Node n, RedBlackTreeOfInteger t) {
+        Node aux = new Node(n.element, true);
+        t.add(aux.element);
+        if(n.left!=null){
+            clone(n.left, t);
+        }
+        if(n.right!=null) {
+            clone(n.right, t);
+        }
+        return aux;
+    }
+    
+    private void GeraConexoesDOT(Node nodo) {
+        if (nodo == null) {
+            return;
+        }
+
+        GeraConexoesDOT(nodo.left);
+        //   "nodeA":esq -> "nodeB" [color="0.650 0.700 0.700"]
+        if (nodo.left != null) {
+            System.out.println("\"node" + nodo.element + "\":esq -> \"node" + nodo.left.element + "\" " + "\n");
+        }
+
+        GeraConexoesDOT(nodo.right);
+        //   "nodeA":dir -> "nodeB";
+        if (nodo.right != null) {
+            System.out.println("\"node" + nodo.element + "\":dir -> \"node" + nodo.right.element + "\" " + "\n");
+        }
+        //"[label = " << nodo->hDir << "]" <<endl;
+    }
+
+    private void GeraNodosDOT(Node nodo) {
+        if (nodo == null) {
+            return;
+        }
+        GeraNodosDOT(nodo.left);
+        //node10[label = "<esq> | 10 | <dir> "];
+        System.out.println("node" + nodo.element + "[label = \"<esq> | " + nodo.element + " | <dir> \"]" + "\n");
+        GeraNodosDOT(nodo.right);
+    }
+
+    public void GeraConexoesDOT() {
+        GeraConexoesDOT(root);
+    }
+
+    public void GeraNodosDOT() {
+        GeraNodosDOT(root);
+    }
+
+    // Gera uma saida no formato DOT
+    // Esta saida pode ser visualizada no GraphViz
+    // Versoes online do GraphViz pode ser encontradas em
+    // http://www.webgraphviz.com/
+    // http://viz-js.com/
+    // https://dreampuf.github.io/GraphvizOnline 
+    public void GeraDOT() {
+        System.out.println("digraph g { \nnode [shape = record,height=.1];\n" + "\n");
+
+        GeraNodosDOT();
+        System.out.println("");
+        GeraConexoesDOT(root);
+        System.out.println("}" + "\n");
+    }    
 }
