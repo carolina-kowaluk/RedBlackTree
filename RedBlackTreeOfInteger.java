@@ -236,22 +236,7 @@ public class RedBlackTreeOfInteger {
      * @param n nodo
      */
     public void rotacaoEsquerda(Node n){
-       Node direito = n.right;
-       n.right = direito.left;
-       direito.left.father = n;
-       direito.left = n;
-       direito.father = n.father;
-       n.father = direito;
-
-       if(n != root){
-        if(direito.father.left == n){
-            direito.father.left = direito;
-        }
-        else
-            direito.father.right = direito;
-       }
-       else
-        root = direito;
+       
     }
 
     /**
@@ -259,22 +244,7 @@ public class RedBlackTreeOfInteger {
      * @param n
      */
     public void rotacaoDireita(Node n){
-        Node esquerdo = n.left;
-        n.left = esquerdo.right;
-        esquerdo.right.father = n;
-        esquerdo.right = n;
-        esquerdo.father = n.father;
-        n.father = esquerdo;
-
-        if(n != root){
-            if(esquerdo.father.left == n){
-                esquerdo.father.left = esquerdo;
-            }
-            else
-                esquerdo.father.right = esquerdo;
-        }
-        else
-            root = esquerdo;
+        
     }
 
     /**
