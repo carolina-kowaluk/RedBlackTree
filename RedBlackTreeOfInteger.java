@@ -57,19 +57,21 @@ public class RedBlackTreeOfInteger{
         }
     } 
 
-    public Node searchNode(Integer element) {
-        Node n = root;
-        while (n != null) {
-          if (element == n.element) {
-            return n;
-          } else if (element < n.element) {
-            n = n.left;
-          } else {
-            n = n.right;
-          }
-        }
-        return null;
-      }
+    public boolean contains(Integer element) {
+        Node n = searchNodeRef(element, root);
+        return (n!=null);
+    }
+    private Node searchNodeRef(Integer element, Node target) {
+        if (element == null || target == null)
+            return null;
+        int c = element.compareTo(target.element);
+        if (c == 0)
+            return target;
+        if (c < 0)
+            return searchNodeRef(element, target.left);
+        else
+            return searchNodeRef(element, target.right);
+    }
 
     /**
      * faz rotação para a esquerda
@@ -132,10 +134,6 @@ public class RedBlackTreeOfInteger{
         }
     }
 
-    /**
-     * adiciona elemento na lista
-     * @param element
-     */
     public void add(Integer element) {
         Node n = root;
         Node father = null;
@@ -164,93 +162,78 @@ public class RedBlackTreeOfInteger{
         fixAdd(newNode);
     }
 
-    private void fixAdd(Node node) {
-        Node parent = node.father;
+    /**
+     * garante que as regras da arvore sejam satisfeitas mudando as cores ou chamando os metodos de rotação
+     * @param n
+     */
+    private void fixAdd(Node n) {
+        Node parent = n.father;
       
-        // Case 1: o nodo é raiz, o pai é null
+        // CASO 1: o nodo é raiz
         if (parent == null) {
-          // Uncomment the following line if you want to enforce black roots (rule 2):
-          node.color = false;
+          n.color = false; //raiz tem que ser preta
           return;
         }
-      
-        // Parent is black --> nothing to do
+        // se o pai for preto a arvore esta ok
         if (parent.color == false) {
           return;
         }
       
-        // From here on, parent is red
+        // CASO 2: o nodo pai é vermelho e raiz
         Node grandparent = parent.father;
       
-        // Case 2:
-        // Not having a grandparent means that parent is the root. If we enforce black roots
-        // (rule 2), grandparent will never be null, and the following if-then block can be
-        // removed.
-        if (grandparent == null) {
-          // As this method is only called on red nodes (either on newly inserted ones - or -
-          // recursively on red grandparents), all we have to do is to recolor the root black.
-          parent.color = false;
-          return;
-        }
-      
-        // Get the uncle (may be null/nil, in which case its color is BLACK)
+        // o tio pode ser null/nil e nesse caso é preto
         Node uncle = getUncle(parent);
       
-        // Case 3: Uncle is red -> recolor parent, grandparent and uncle
+        // CASO 3: pai e tio são vermelhos - recolorir o pai, avo e tio 
         if (uncle != null && uncle.color == true) {
           parent.color = false;
           grandparent.color = true;
           uncle.color = false;
       
-          // Call recursively for grandparent, which is now red.
-          // It might be root or have a red parent, in which case we need to fix more...
+          // chama recursivamente o avo vermelho
+          // pode ser root ou ter um pai vermelho 
+          // nesse caso tem que fazer mudanças em outros nodos
           fixAdd(grandparent);
         }
       
-        // Parent is left child of grandparent
+        // CASO 4: pai é vermelho, tio é preto, nodo é neto interno
+        // CASO 5: pai é vermelho, tio é preto, nodo é neto externo
+        // o pai é filho a esquerda
         else if (parent == grandparent.left) {
-          // Case 4a: Uncle is black and node is left->right "inner child" of its grandparent
-          if (node == parent.right) {
-            rotateLeft(parent);
-      
-            // Let "parent" point to the new root node of the rotated sub-tree.
-            // It will be recolored in the next step, which we're going to fall-through to.
-            parent = node;
+          // CASO 4a: tio é preto e nodo é filho a esquerda (neto interno direito)
+          if (n == parent.right) {
+            rotateLeft(parent); //faz rotação para esquerda
+            // pai aponta para o novo nodo da subarvore rotacionada
+            parent = n;
           }
-      
-          // Case 5a: Uncle is black and node is left->left "outer child" of its grandparent
-          rotateRight(grandparent);
-      
-          // Recolor original parent and grandparent
+        
+          // CASO 5a: tio é preto e nodo é filho a esquerda (neto externo esquerdo)
+          rotateRight(grandparent); //faz rotação para direita
+          // muda a cor do pai e do avo
           parent.color = false;
           grandparent.color = true;
         }
       
-        // Parent is right child of grandparent
+        // o pai é filho a direita
         else {
-          // Case 4b: Uncle is black and node is right->left "inner child" of its grandparent
-          if (node == parent.left) {
-            rotateRight(parent);
+          // CASO 4b: tio é preto e nodo é filho a direita (neto interno esquerdo)
+          if (n == parent.left) {
+            rotateRight(parent); //faz rotação para direita
       
-            // Let "parent" point to the new root node of the rotated sub-tree.
-            // It will be recolored in the next step, which we're going to fall-through to.
-            parent = node;
+            // pai aponta para o novo nodo da subarvore rotacionada
+            parent = n;
           }
       
-          // Case 5b: Uncle is black and node is right->right "outer child" of its grandparent
-          rotateLeft(grandparent);
+          // CASO 5: tio é preto e nodo é filho a direita (neto externo direito)
+          rotateLeft(grandparent); //faz rotação para esquerda
       
-          // Recolor original parent and grandparent
+          // Recolorir pai e avo 
           parent.color = false;
           grandparent.color = true;
         }
     }
 
-    /**
-     * acha tio do nodo
-     * @param n
-     * @return o nodo tio
-     */
     private Node getUncle(Node n) {
         Node grandparent = n.father;
         if (grandparent.left == n) {
@@ -262,34 +245,8 @@ public class RedBlackTreeOfInteger{
         }
     }
 
-    public boolean getColor(Integer element){
-        Node aux = searchNode(element);
-        if (aux==null) { //se nao encontrou element
-            throw new NoSuchElementException();
-        }
-        return aux.color;
-    }
-
-    public Integer getLeft(Integer element) {
-        Node aux = searchNode(element);
-        if(aux==null)
-            throw new NoSuchElementException();
-        if(aux.left==null)
-            return null;
-        return aux.left.element;
-    }
-
-    public Integer getRight(Integer element) {
-        Node aux = searchNode(element);
-        if(aux==null)
-            throw new NoSuchElementException();
-        if(aux.right==null)
-            return null;
-        return aux.right.element;
-    }
-
     public Integer getParent(Integer element){
-        Node aux = searchNode(element);
+        Node aux = searchNodeRef(element, root);
         if (aux==null) { //se nao encontrou element
             throw new NoSuchElementException();
         }
@@ -306,7 +263,7 @@ public class RedBlackTreeOfInteger{
     }
     private Node clone(Node n, RedBlackTreeOfInteger t) {
         Node aux = new Node(n.element, n.color);
-        t.addClone(aux.element, aux.color);
+        t.addClone(aux.element, aux.color); //faz o add de uma arvore ABP normal
         if(n.left!=null){
             clone(n.left, t);
         }
@@ -318,7 +275,6 @@ public class RedBlackTreeOfInteger{
     private void addClone(Integer element, boolean color){
         Node n = root;
         Node father = null;
-
         while (n != null) {
           father = n;
           if (element < n.element) {
@@ -329,7 +285,6 @@ public class RedBlackTreeOfInteger{
             throw new IllegalArgumentException("BST already contains a node with key " + element);
           }
         }
-      
         Node newNode = new Node(element, color);
         if (father == null) {
           root = newNode;
@@ -438,12 +393,6 @@ public class RedBlackTreeOfInteger{
         GeraNodosDOT(root);
     }
 
-    // Gera uma saida no formato DOT
-    // Esta saida pode ser visualizada no GraphViz
-    // Versoes online do GraphViz pode ser encontradas em
-    // http://www.webgraphviz.com/
-    // http://viz-js.com/
-    // https://dreampuf.github.io/GraphvizOnline 
     public void GeraDOT() {
         System.out.println("digraph g { \nnode [shape = record,height=.1];\n" + "\n");
 
