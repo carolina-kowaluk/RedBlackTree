@@ -18,6 +18,7 @@ public class App {
         System.out.println("altura da arvore: "+b.height());
     
         //chamar o metodo geraDOT() para a arvore
+        System.out.println("geraDOT() arvore: ");
         b.GeraDOT();
 
         //limpar a arvore
@@ -43,6 +44,7 @@ public class App {
         clone = b.clone();
        
         //chamar o metodo geraDOT() para o clone
+        System.out.println("geraDOT() clone: ");
         clone.GeraDOT();
     }
 }
