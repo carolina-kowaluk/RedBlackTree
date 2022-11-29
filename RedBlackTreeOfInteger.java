@@ -182,7 +182,7 @@ public class RedBlackTreeOfInteger{
         Node uncle = getUncle(parent); //nodo tio
       
         // CASO 3: pai e tio são vermelhos - recolorir o pai, avo e tio 
-        if (uncle != null && uncle.color == true) {
+        if (uncle != nil && uncle.color == true) {
           parent.color = false;
           grandparent.color = true;
           uncle.color = false;
