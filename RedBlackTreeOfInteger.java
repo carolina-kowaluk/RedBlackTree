@@ -6,20 +6,25 @@ public class RedBlackTreeOfInteger{
         Node left;
         Node right;
         Node father;
-        boolean color;
-      
+        boolean color; 
+        // VERMELHO: true
+        // PRETO: false
         public Node(Integer element, boolean color) {
           this.element = element;
           this.color = color;
+          left = nil;
+          right = nil;
         }
     }
        
     private int count; //contagem do número de nodos
     private Node root; //referência para o nodo raiz
+    private static Node nil; //nodo sentinela
 
     public RedBlackTreeOfInteger() {
         count = 0;
-        root = null;
+        nil = new Node(0,false);
+        root = nil;
     }
 
     public void clear() {
@@ -28,36 +33,36 @@ public class RedBlackTreeOfInteger{
     }
 
     public boolean isEmpty() {
-        return (root == null);
+        return (count == 0);
     }
 
     public int size() {
         return count;
     }
 
-    public int height() {        
-        if (root == null)
+    public int height() {  //O(n)      
+        if (root == nil)
             return 0;
-        else if (root.left==null && root.right==null)
+        else if (root.left==nil && root.right==nil)
             return 0;
         else
             return height(root);
     }    
     private int height(Node n) {       
-        if ( n.left == null && n.right == null) {
+        if ( n.left == nil && n.right == nil) {
             return 0;
         }
         else {
             int h=0;
-            if ( n.left != null)
+            if ( n.left != nil)
                 h = Math.max(h, height(n.left));
-            if ( n.right != null)
+            if ( n.right != nil)
                 h = Math.max(h, height(n.right));
             return 1+h;
         }
     } 
 
-    public boolean contains(Integer element) {
+    public boolean contains(Integer element) { //O(log n)
         Node n = searchNodeRef(element, root);
         return (n!=null);
     }
@@ -73,16 +78,13 @@ public class RedBlackTreeOfInteger{
             return searchNodeRef(element, target.right);
     }
 
-    /**
-     * faz rotação para a esquerda
-     * @param n nodo
-     */
+    //faz rotação para esquerda
     private void rotateLeft(Node n) {
         Node parent = n.father;
         Node direita = n.right;
       
         n.right = direita.left;
-        if (direita.left != null) {
+        if (direita.left != nil) {
           direita.left.father = n;
         }
       
@@ -92,16 +94,13 @@ public class RedBlackTreeOfInteger{
         replaceParentsChild(parent, n, direita);
     }
 
-    /**
-     * faz rotação para a direita
-     * @param n nodo
-     */
+    //faz rotação para direita
     private void rotateRight(Node n) {
         Node pai = n.father;
         Node esquerda = n.left;
       
         n.left = esquerda.right;
-        if (esquerda.right != null) {
+        if (esquerda.right != nil) {
           esquerda.right.father = n;
         }
       
@@ -129,24 +128,21 @@ public class RedBlackTreeOfInteger{
           throw new IllegalStateException("O nodo não é filho do nodo pai");
         }
       
-        if (newChild != null) {
+        if (newChild != nil) {
           newChild.father = father;
         }
     }
 
-    public void add(Integer element) {
+    public void add(Integer element) { //O(log n)
         Node n = root;
         Node father = null;
-      
-        //enquanto o root não for null
-        while (n != null) {
+        //enquanto o root não for null/nil
+        while (n != nil && n != null) {
           father = n;
           if (element < n.element) {
             n = n.left;
           } else if (element > n.element) {
             n = n.right;
-          } else {
-            throw new IllegalArgumentException("A árvore já contém o elemento " + element);
           }
         }
         //insere novo nodo
@@ -164,7 +160,7 @@ public class RedBlackTreeOfInteger{
 
     /**
      * garante que as regras da arvore sejam satisfeitas mudando as cores ou chamando os metodos de rotação
-     * @param n
+     * @param n nodo
      */
     private void fixAdd(Node n) {
         Node parent = n.father;
@@ -174,32 +170,28 @@ public class RedBlackTreeOfInteger{
           n.color = false; //raiz tem que ser preta
           return;
         }
+
+        //CASO 2: o nodo pai é vermelho e raiz
         // se o pai for preto a arvore esta ok
+        // nesse caso nada precisa ser feito se o caso 1 foi feito
         if (parent.color == false) {
           return;
         }
-      
-        // CASO 2: o nodo pai é vermelho e raiz
-        Node grandparent = parent.father;
-      
-        // o tio pode ser null/nil e nesse caso é preto
-        Node uncle = getUncle(parent);
+
+        Node grandparent = parent.father; //nodo avo
+        Node uncle = getUncle(parent); //nodo tio
       
         // CASO 3: pai e tio são vermelhos - recolorir o pai, avo e tio 
         if (uncle != null && uncle.color == true) {
           parent.color = false;
           grandparent.color = true;
           uncle.color = false;
-      
-          // chama recursivamente o avo vermelho
-          // pode ser root ou ter um pai vermelho 
-          // nesse caso tem que fazer mudanças em outros nodos
           fixAdd(grandparent);
         }
       
-        // CASO 4: pai é vermelho, tio é preto, nodo é neto interno
-        // CASO 5: pai é vermelho, tio é preto, nodo é neto externo
-        // o pai é filho a esquerda
+        // CASO 4: pai é vermelho, tio é preto, nodo é neto INTERNO
+        // CASO 5: pai é vermelho, tio é preto, nodo é neto EXTERNO
+        // a: o pai é filho a ESQUERDA
         else if (parent == grandparent.left) {
           // CASO 4a: tio é preto e nodo é filho a esquerda (neto interno direito)
           if (n == parent.right) {
@@ -215,7 +207,7 @@ public class RedBlackTreeOfInteger{
           grandparent.color = true;
         }
       
-        // o pai é filho a direita
+        // b: o pai é filho a DIREITA
         else {
           // CASO 4b: tio é preto e nodo é filho a direita (neto interno esquerdo)
           if (n == parent.left) {
@@ -225,15 +217,19 @@ public class RedBlackTreeOfInteger{
             parent = n;
           }
       
-          // CASO 5: tio é preto e nodo é filho a direita (neto externo direito)
+          // CASO 5b: tio é preto e nodo é filho a direita (neto externo direito)
           rotateLeft(grandparent); //faz rotação para esquerda
-      
-          // Recolorir pai e avo 
+          // muda cor do pai e avo 
           parent.color = false;
           grandparent.color = true;
         }
     }
 
+    /**
+     * retorna o nodo tio do nodo n
+     * @param n nodo
+     * @return nodo tio
+     */
     private Node getUncle(Node n) {
         Node grandparent = n.father;
         if (grandparent.left == n) {
@@ -256,33 +252,35 @@ public class RedBlackTreeOfInteger{
         return aux.father.element; // retorna o elemento pai
     }
 
-    public RedBlackTreeOfInteger clone(){
+    public RedBlackTreeOfInteger clone(){ //O(n log n)
         RedBlackTreeOfInteger newTree = new RedBlackTreeOfInteger();
         clone(root, newTree); 
         return newTree;
     }
     private Node clone(Node n, RedBlackTreeOfInteger t) {
-        Node aux = new Node(n.element, n.color);
-        t.addClone(aux.element, aux.color); //faz o add de uma arvore ABP normal
-        if(n.left!=null){
-            clone(n.left, t);
-        }
-        if(n.right!=null) {
-            clone(n.right, t);
+        Node aux = null;
+        if(n.element!=0 && n!=nil){
+            aux = new Node(n.element, n.color);
+            t.addClone(aux.element, aux.color); //faz o add de uma ABP normal
+
+            if(n.left!=nil && n.left.element!=0){
+                clone(n.left, t);
+            }
+            if(n.right!=nil && n.right.element!=0) {
+                clone(n.right, t);
+            }
         }
         return aux;
     }
-    private void addClone(Integer element, boolean color){
+    public void addClone(Integer element, boolean color) {
         Node n = root;
         Node father = null;
-        while (n != null) {
+        while (n != null && n!=nil) {
           father = n;
           if (element < n.element) {
             n = n.left;
           } else if (element > n.element) {
             n = n.right;
-          } else {
-            throw new IllegalArgumentException("BST already contains a node with key " + element);
           }
         }
         Node newNode = new Node(element, color);
@@ -296,13 +294,14 @@ public class RedBlackTreeOfInteger{
         newNode.father = father;
     }
 
+
     public LinkedListOfInteger positionsPre() {
         LinkedListOfInteger res = new LinkedListOfInteger();
         positionsPreAux(root, res);
         return res;
     }
     private void positionsPreAux(Node n, LinkedListOfInteger res) {
-        if (n != null) {
+        if (n != nil) {
             res.add(n.element); //Visita o nodo
             positionsPreAux(n.left, res); //Visita a subarvore da esquerda
             positionsPreAux(n.right, res); //Visita a subarvore da direita
@@ -316,7 +315,7 @@ public class RedBlackTreeOfInteger{
         return res;
     }
     private void positionsPosAux(Node n, LinkedListOfInteger res) {
-        if (n != null) {
+        if (n != nil) {
             positionsPosAux(n.left, res); //Visita a subarvore da esquerda
             positionsPosAux(n.right, res); //Visita a subarvore da direita
             res.add(n.element); //Visita o nodo
@@ -329,7 +328,7 @@ public class RedBlackTreeOfInteger{
         return res;
     }
     private void positionsCentralAux(Node n, LinkedListOfInteger res) {
-        if (n != null) {
+        if (n != nil) {
             positionsCentralAux(n.left, res); //Visita a subarvore da esquerda
             res.add(n.element); //Visita o nodo
             positionsCentralAux(n.right, res); //Visita a subarvore da direita
@@ -340,14 +339,14 @@ public class RedBlackTreeOfInteger{
         Queue<Node> fila = new Queue<>();
         Node atual = null;
         LinkedListOfInteger res = new LinkedListOfInteger();
-        if (root != null) {
+        if (root != nil) {
             fila.enqueue(root);
             while (!fila.isEmpty()) {
                 atual = fila.dequeue();
-                if (atual.left != null) {
+                if (atual.left != nil) {
                     fila.enqueue(atual.left);
                 }
-                if (atual.right != null) {
+                if (atual.right != nil) {
                     fila.enqueue(atual.right);
                 }
                 res.add(atual.element);
@@ -357,7 +356,7 @@ public class RedBlackTreeOfInteger{
     }  
 
     private void GeraConexoesDOT(Node nodo) {
-        if (nodo == null) {
+        if (nodo == nil) {
             return;
         }
 
@@ -376,7 +375,7 @@ public class RedBlackTreeOfInteger{
     }
 
     private void GeraNodosDOT(Node nodo) {
-        if (nodo == null) {
+        if (nodo == nil) {
             return;
         }
         GeraNodosDOT(nodo.left);
